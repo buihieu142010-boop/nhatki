@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhật ký mỗi ngày</title>
+<style>
+    body {
+        margin: 0;
+        background: #b58853;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .box {
+        width: 90%;
+        max-width: 600px;
+        background: rgba(255,255,255,0.8);
+        padding: 20px;
+        border-radius: 10px;
+    }
+    textarea {
+        width: 100%;
+        height: 300px;
+        font-size: 18px;
+        border: none;
+        outline: none;
+        resize: none;
+        background: transparent;
+    }
+</style>
+</head>
+<body>
+<div class="box">
+    <h2>Nhật ký hôm nay</h2>
+    <textarea id="diary"></textarea>
+</div>
+<script>
+    const box = document.getElementById("diary");
+    const today = new Date().toDateString();
+
+    if(localStorage.lastDate !== today){
+        localStorage.diary = "";
+        localStorage.lastDate = today;
+    }
+
+    box.value = localStorage.diary || "";
+
+    box.addEventListener("input", ()=>{
+        localStorage.diary = box.value;
+    });
+</script>
+</body>
+</html>
