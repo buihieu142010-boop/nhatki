@@ -57,11 +57,11 @@
 <div class="box" id="viewBox">
     <h2 id="viewDate">Chọn một ngày</h2>
     <div id="viewContent"></div>
+    <textarea id="writeMore" placeholder="Ghi thêm vào ngày này..."></textarea>
 </div>
 </div>
 <script>
 
-// Danh sách lịch sử
 const list = document.getElementById("historyList");
 const viewDate = document.getElementById("viewDate");
 const viewContent = document.getElementById("viewContent");
@@ -74,7 +74,7 @@ for(let key in localStorage){
         div.textContent = date;
         div.onclick = () => {
             viewDate.textContent = date;
-            viewContent.innerHTML = localStorage[key].replace(/\n/g, "<br>");
+            viewContent.innerHTML = localStorage[key].replace("/\n/g", "<br>");
         };
         list.appendChild(div);
     }
