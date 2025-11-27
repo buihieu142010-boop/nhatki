@@ -2,80 +2,180 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nhật ký mỗi ngày</title>
+<title>Daily Diary</title>
+
 <style>
-    .sidebar {
-        width: 200px;
-        height: 100vh;
-        overflow-y: auto;
-        background: #8c6538;
-        padding: 15px;
-        color: white;
-    }
-    .sidebar div {
-        padding: 10px;
-        background: rgba(255,255,255,0.2);
-        margin-bottom: 10px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-    .sidebar div:hover {
-        background: rgba(255,255,255,0.35);
-    }
-    #viewBox { flex: 1; margin-left: 20px; }
-    body { display: flex; }
     body {
         margin: 0;
-        background: #b58853;
-        font-family: Arial, sans-serif;
+        font-family: Arial;
         display: flex;
-        justify-content: center;
-        align-items: center;
+        background: #d9b77c; /* vàng nâu */
+    }
+
+    /* Panel lịch sử */
+    #historyPanel {
+        width: 240px;
+        background: #c9a46a;
+        border-right: 2px solid #8b6b3f;
+        padding: 10px;
         height: 100vh;
+        overflow-y: auto;
+        color: #3a2a17;
     }
-    .box {
-        width: 90%;
-        max-width: 600px;
-        background: rgba(255,255,255,0.8);
+
+    #historyTitle {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .historyItem {
+        padding: 8px;
+        background: #f5deb3;
+        border: 1px solid #b9935a;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        color: #3d2c1c;
+    }
+    .historyItem:hover {
+        background: #ffe2ac;
+    }
+
+    /* Khu vực chính */
+    #main {
+        flex: 1;
         padding: 20px;
-        border-radius: 10px;
+        background: #d9b77c;
     }
-    textarea {
+
+    #logo {
+        width: 70px;
+        cursor: pointer;
+        margin-bottom: 15px;
+    }
+
+    #currentDate {
+        font-size: 22px;
+        font-weight: bold;
+        color: #3b2a17;
+        margin-bottom: 10px;
+    }
+
+    #note {
         width: 100%;
-        height: 300px;
+        height: 85vh;
         font-size: 18px;
-        border: none;
-        outline: none;
+        background: #f5deb3;
+        border: 2px solid #b9935a;
+        color: #3b2a17;
+        padding: 10px;
+        border-radius: 10px;
         resize: none;
-        background: transparent;
     }
 </style>
 </head>
+
 <body>
-<div class="sidebar" id="historyList"></div>
-<div class="box" id="viewBox">
-    <h2 id="viewDate">Chọn một ngày</h2>
-    <div id="viewContent"></div>
-    <textarea id="writeMore" placeholder="Ghi thêm vào ngày này..."></textarea>
+
+<!-- Lịch sử -->
+<div id="historyPanel">
+    <div id="historyTitle">📜 Lịch sử</div>
+    <div id="historyList"></div>
 </div>
+
+<!-- Nội dung chính -->
+<div id="main">
+    <img id="logo" src="https://e7.pngegg.com/pngimages/268/859/png-clipart-yellow-autumn-leaf-color-leaf-watercolor-leaf-maple-leaf.png">
+    
+    <div id="currentDate"></div>
+    <textarea id="note" placeholder="Viết nhật ký hôm nay tại đây..."></textarea>
 </div>
+
 <script>
-
-const list = document.getElementById("historyList");
-const viewDate = document.getElementById("viewDate");
-const viewContent = document.getElementById("viewContent");
-list.innerHTML = "";
-
-for(let key in localStorage){
-    if(key.startsWith("entry_")){
-        const date = key.replace("entry_", "");
-        const div = document.createElement("div");
-        div.textContent = date;
-        div.onclick = () => {
-            viewDate.textContent = date;
-            viewContent.innerHTML = localStorage[key].replace("/\n/g", "<br>");
-        };
-        list.appendChild(div);
-    }
+function getDateKey() {
+    const now = new Date();
+    return now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
 }
+
+function getFullTimestamp() {
+    const now = new Date();
+    return now.toLocaleString("vi-VN", { hour12: false });
+}
+
+let todayKey = getDateKey();
+document.getElementById("currentDate").textContent = "📅 " + todayKey;
+
+function loadToday() {
+    let saved = localStorage.getItem("diary_" + todayKey);
+    document.getElementById("note").value = saved ? saved : "";
+}
+loadToday();
+
+document.getElementById("note").addEventListener("input", function () {
+    localStorage.setItem("diary_" + todayKey, this.value);
+});
+
+document.getElementById("logo").addEventListener("click", function () {
+    let content = document.getElementById("note").value.trim();
+    if (content !== "") {
+        saveHistory(todayKey, content);
+    }
+    document.getElementById("note").value = "";
+    localStorage.setItem("diary_" + todayKey, "");
+    loadHistory();
+});
+
+setInterval(() => {
+    let current = getDateKey();
+
+    if (current !== todayKey) {
+        let oldContent = localStorage.getItem("diary_" + todayKey);
+        if (oldContent && oldContent.trim() !== "") {
+            saveHistory(todayKey, oldContent);
+        }
+
+        todayKey = current;
+        document.getElementById("currentDate").textContent = "📅 " + todayKey;
+        loadToday();
+        loadHistory();
+    }
+}, 5000); 
+function saveHistory(date, text) {
+    let timestamp = getFullTimestamp();
+    let key = "history_" + date + "_" + timestamp;
+    localStorage.setItem(key, text);
+}
+
+function loadHistory() {
+    let list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    Object.keys(localStorage)
+        .filter(k => k.startsWith("history_"))
+        .sort()
+        .forEach(key => {
+            let div = document.createElement("div");
+            div.className = "historyItem";
+
+            let parts = key.split("_");
+            let date = parts[1];
+            let time = parts[2] + " " + parts[3];
+
+            div.textContent = date + " • " + time;
+
+            div.onclick = () => {
+                let content = localStorage.getItem(key).replace(/\n/g, "<br>");
+                alert("📅 " + date + "\n🕒 " + time + "\n\n" + content);
+            };
+
+            list.appendChild(div);
+        });
+}
+loadHistory();
+
+</script>
+
+</body>
+</html>
