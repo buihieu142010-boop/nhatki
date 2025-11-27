@@ -5,6 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nhật ký mỗi ngày</title>
 <style>
+    .sidebar {
+        width: 200px;
+        height: 100vh;
+        overflow-y: auto;
+        background: #8c6538;
+        padding: 15px;
+        color: white;
+    }
+    .sidebar div {
+        padding: 10px;
+        background: rgba(255,255,255,0.2);
+        margin-bottom: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .sidebar div:hover {
+        background: rgba(255,255,255,0.35);
+    }
+    #viewBox { flex: 1; margin-left: 20px; }
+    body { display: flex; }
     body {
         margin: 0;
         background: #b58853;
@@ -33,24 +53,29 @@
 </style>
 </head>
 <body>
-<div class="box">
-    <h2>Nhật ký hôm nay</h2>
-    <textarea id="diary"></textarea>
+<div class="sidebar" id="historyList"></div>
+<div class="box" id="viewBox">
+    <h2 id="viewDate">Chọn một ngày</h2>
+    <div id="viewContent"></div>
+</div>
 </div>
 <script>
-    const box = document.getElementById("diary");
-    const today = new Date().toDateString();
 
-    if(localStorage.lastDate !== today){
-        localStorage.diary = "";
-        localStorage.lastDate = today;
+// Danh sách lịch sử
+const list = document.getElementById("historyList");
+const viewDate = document.getElementById("viewDate");
+const viewContent = document.getElementById("viewContent");
+list.innerHTML = "";
+
+for(let key in localStorage){
+    if(key.startsWith("entry_")){
+        const date = key.replace("entry_", "");
+        const div = document.createElement("div");
+        div.textContent = date;
+        div.onclick = () => {
+            viewDate.textContent = date;
+            viewContent.innerHTML = localStorage[key].replace(/\n/g, "<br>");
+        };
+        list.appendChild(div);
     }
-
-    box.value = localStorage.diary || "";
-
-    box.addEventListener("input", ()=>{
-        localStorage.diary = box.value;
-    });
-</script>
-</body>
-</html>
+}
